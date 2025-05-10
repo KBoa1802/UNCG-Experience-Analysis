@@ -1,0 +1,146 @@
+library(stats)
+library(psych)
+library(dplyr)
+library(ggplot2)
+dat <- read.csv("College Experience Survey (Responses) - Form Responses 1.csv")
+View(dat)
+names(dat) <- c("Timestamp", "User Privacy Agreement", "Classification", "Major", "Race/Ethnicity", "Gender",
+                "CampusRating", "MajorSatisfactionRating", "AffordabilityRating", "UNCGSocialRating", "FacilitiesRating",
+                "UNCGClassRating", "UNCGProfessorRating", "MentalHealthRating", "UNCGEventsRating", "JobPrepRating", "ExtracurricularRating", "Diversity/Inclusion_Rating",
+                "Sexual_Orientation")
+View(dat)
+dat <- dat %>% mutate(Classification = as.factor(Classification), Major = as.factor(Major), `Race/Ethnicity` = as.factor(`Race/Ethnicity`), Gender = as.factor(Gender))
+dat <- dat[,c(1, 3:19)]
+View(dat)
+# Grouped By Gender
+dat_avg <- dat %>%
+  select(Gender, CampusRating, MajorSatisfactionRating, AffordabilityRating, UNCGSocialRating,
+         FacilitiesRating, UNCGClassRating, UNCGProfessorRating, MentalHealthRating,
+         UNCGEventsRating, JobPrepRating, ExtracurricularRating, `Diversity/Inclusion_Rating`) %>%
+  group_by(Gender) %>%
+  summarise(
+    CampusRating = mean(CampusRating, na.rm = TRUE),
+    MajorSatisfactionRating = mean(MajorSatisfactionRating, na.rm = TRUE),
+    AffordabilityRating = mean(AffordabilityRating, na.rm = TRUE),
+    UNCGSocialRating = mean(UNCGSocialRating, na.rm = TRUE),
+    FacilitiesRating = mean(FacilitiesRating, na.rm = TRUE),
+    UNCGClassRating = mean(UNCGClassRating, na.rm = TRUE),
+    UNCGProfessorRating = mean(UNCGProfessorRating, na.rm = TRUE),
+    MentalHealthRating = mean(MentalHealthRating, na.rm = TRUE),
+    UNCGEventsRating = mean(UNCGEventsRating, na.rm = TRUE),
+    JobPrepRating = mean(JobPrepRating, na.rm = TRUE),
+    ExtracurricularRating = mean(ExtracurricularRating, na.rm = TRUE),
+    `Diversity/Inclusion_Rating` = mean(`Diversity/Inclusion_Rating`, na.rm = TRUE)
+  ) 
+dat_avg <- dat_avg[1:2,]
+# Grouped By Classification
+dat_avg_2 <- dat %>%
+  select(Classification, CampusRating, MajorSatisfactionRating, AffordabilityRating, UNCGSocialRating,
+         FacilitiesRating, UNCGClassRating, UNCGProfessorRating, MentalHealthRating,
+         UNCGEventsRating, JobPrepRating, ExtracurricularRating, `Diversity/Inclusion_Rating`) %>%
+  group_by(Classification) %>%
+  summarise(
+    CampusRating = mean(CampusRating, na.rm = TRUE),
+    MajorSatisfactionRating = mean(MajorSatisfactionRating, na.rm = TRUE),
+    AffordabilityRating = mean(AffordabilityRating, na.rm = TRUE),
+    UNCGSocialRating = mean(UNCGSocialRating, na.rm = TRUE),
+    FacilitiesRating = mean(FacilitiesRating, na.rm = TRUE),
+    UNCGClassRating = mean(UNCGClassRating, na.rm = TRUE),
+    UNCGProfessorRating = mean(UNCGProfessorRating, na.rm = TRUE),
+    MentalHealthRating = mean(MentalHealthRating, na.rm = TRUE),
+    UNCGEventsRating = mean(UNCGEventsRating, na.rm = TRUE),
+    JobPrepRating = mean(JobPrepRating, na.rm = TRUE),
+    ExtracurricularRating = mean(ExtracurricularRating, na.rm = TRUE),
+    `Diversity/Inclusion_Rating` = mean(`Diversity/Inclusion_Rating`, na.rm = TRUE)
+  )
+# Grouped By Race/Ethnicity
+dat_avg_3 <- dat %>%
+  select(`Race/Ethnicity`, CampusRating, MajorSatisfactionRating, AffordabilityRating, UNCGSocialRating,
+         FacilitiesRating, UNCGClassRating, UNCGProfessorRating, MentalHealthRating,
+         UNCGEventsRating, JobPrepRating, ExtracurricularRating, `Diversity/Inclusion_Rating`) %>%
+  group_by(`Race/Ethnicity`) %>%
+  summarise(
+    CampusRating = mean(CampusRating, na.rm = TRUE),
+    MajorSatisfactionRating = mean(MajorSatisfactionRating, na.rm = TRUE),
+    AffordabilityRating = mean(AffordabilityRating, na.rm = TRUE),
+    UNCGSocialRating = mean(UNCGSocialRating, na.rm = TRUE),
+    FacilitiesRating = mean(FacilitiesRating, na.rm = TRUE),
+    UNCGClassRating = mean(UNCGClassRating, na.rm = TRUE),
+    UNCGProfessorRating = mean(UNCGProfessorRating, na.rm = TRUE),
+    MentalHealthRating = mean(MentalHealthRating, na.rm = TRUE),
+    UNCGEventsRating = mean(UNCGEventsRating, na.rm = TRUE),
+    JobPrepRating = mean(JobPrepRating, na.rm = TRUE),
+    ExtracurricularRating = mean(ExtracurricularRating, na.rm = TRUE),
+    `Diversity/Inclusion_Rating` = mean(`Diversity/Inclusion_Rating`, na.rm = TRUE)
+  )
+View(dat_avg_3)
+table(dat$`Race/Ethnicity`)
+Gender_Plot <- ggplot(dat_avg, aes(x = Gender, y = MentalHealthRating, fill = Gender)) + geom_col() +
+  geom_text(aes(label = round(MentalHealthRating, digits = 2)), vjust = 14, size = 5) + labs(title = "Mental Health Rating By Gender", x = "Gender", y = "Mental Health Rating") +
+  theme_minimal()
+Gender_Plot
+# Gender has no indication on the MentalHealthRating of a student
+
+Gens <- lm(MentalHealthRating ~ Gender, data = dat)
+summary(Gens)
+dats <- dat %>%
+  filter(Gender != "Transgender") %>%
+  droplevels() 
+View(dats)
+p_means <- aggregate(MentalHealthRating ~ Gender, data = dats, mean)
+mbp <- ggplot(dats, aes(x = Gender, y = MentalHealthRating, fill = Gender)) + 
+  geom_boxplot() + geom_point(data  = p_means, aes(y = MentalHealthRating),
+                              shape = 23, size = 5, color = "black") +
+  labs(title = "")
+mbp
+# Does the major effect the satisfaction rating
+dat_avg_4 <- dat %>%
+  mutate(Major = ifelse(Major != "Media Studies", "Other", "Media Studies")) %>%
+  select(Major, CampusRating, MajorSatisfactionRating, AffordabilityRating, UNCGSocialRating,
+         FacilitiesRating, UNCGClassRating, UNCGProfessorRating, MentalHealthRating,
+         UNCGEventsRating, JobPrepRating, ExtracurricularRating, `Diversity/Inclusion_Rating`) %>%
+  group_by(Major) %>%
+  summarise(CampusRating = mean(CampusRating, na.rm = TRUE),
+            MajorSatisfactionRating = mean(MajorSatisfactionRating, na.rm = TRUE),
+            AffordabilityRating = mean(AffordabilityRating, na.rm = TRUE),
+            UNCGSocialRating = mean(UNCGSocialRating, na.rm = TRUE),
+            FacilitiesRating = mean(FacilitiesRating, na.rm = TRUE),
+            UNCGClassRating = mean(UNCGClassRating, na.rm = TRUE),
+            UNCGProfessorRating = mean(UNCGProfessorRating, na.rm = TRUE),
+            MentalHealthRating = mean(MentalHealthRating, na.rm = TRUE),
+            UNCGEventsRating = mean(UNCGEventsRating, na.rm = TRUE),
+            JobPrepRating = mean(JobPrepRating, na.rm = TRUE),
+            ExtracurricularRating = mean(ExtracurricularRating, na.rm = TRUE),
+            `Diversity/Inclusion_Rating` = mean(`Diversity/Inclusion_Rating`, na.rm = TRUE))
+View(dat_avg_4)
+
+mj_dp <- ggplot(dat_avg_4, aes(x = Major, y = MajorSatisfactionRating, fill = Major)) +
+  geom_col() +
+  scale_fill_manual(values = c("Media Studies" = "yellow", "Other" = "purple")) +
+  geom_text(aes(label = round(MajorSatisfactionRating, digits = 2)), vjust = 14, size = 5) +
+  labs(title = "Satisfaction Rating by Major", x = "Major", y = "Satisfaction Rating") +
+  theme_minimal()
+mj_dp
+# Model
+mj_ml <- lm(MajorSatisfactionRating ~ Major, data = dat)
+summary(mj_ml)
+# The Major doesn't have an effect on the satisfaction rating of the major
+
+# Does the class affect the rating for classes and professors
+View(dat_avg_2)
+cl_bp <- ggplot(dat_avg_2, aes(x = Classification, y = UNCGClassRating, fill = Classification)) + geom_col() +
+  geom_text(aes(label = round(UNCGClassRating, digits = 2)), vjust = 14, size = 5) +
+  labs(title = "Class Rating by Classification", x = "Classification", y = "Class Rating") +
+  theme_minimal()
+cl_bp
+cl_ml <- lm(UNCGClassRating ~ Classification, data = dat)
+summary(cl_ml)
+# Classification doesnt affect the Class Rating
+pr_bp <- ggplot(dat_avg_2, aes(x = Classification, y = UNCGProfessorRating, fill = Classification)) + geom_col() +
+  geom_text(aes(label = round(UNCGProfessorRating, digits = 2)), vjust = 14, size = 5) +
+  labs(title = "Professor Rating by Classification", x = "Classification", y = "Professor Rating") +
+  theme_minimal()
+pr_bp
+pr_ml <- lm(UNCGProfessorRating ~ Classification, data = dat)
+summary(pr_ml)
+# Classification doesnt affect professor rating either
